@@ -29,3 +29,5 @@ start = perf_counter()
 df = pd.concat(chunks)
 print("Concat:", perf_counter() - start, "s")
 print(df.info(memory_usage='deep'))
+
+df.to_hdf('data.h5', key='df', mode='w')
