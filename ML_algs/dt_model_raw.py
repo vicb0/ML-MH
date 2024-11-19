@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-
-@author: Felipe
-"""
 import pandas as pd
 import matplotlib.pyplot as plt
 
