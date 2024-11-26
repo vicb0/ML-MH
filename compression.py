@@ -54,4 +54,4 @@ print("Concat:", perf_counter() - start, "s")
 df.info(memory_usage='deep')
 
 # Saves in hdf format for faster reading, and no need to run this script again in the future.
-df.to_hdf('./ML_algs/data.h5', key='df', mode='w')
+df.to_hdf('./data.h5', key='df', mode='w')
