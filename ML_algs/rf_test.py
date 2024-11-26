@@ -8,7 +8,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 data = pd.read_hdf('./data.h5')
 data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
 
-data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API'])
+data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', "vt_detection", "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
 
 X = data.drop(columns=['CLASS'])
 y = data['CLASS']
