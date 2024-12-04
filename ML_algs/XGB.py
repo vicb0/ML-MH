@@ -78,7 +78,7 @@ def modelosRF(ds, name):
 	means4 = DTC.cv_results_['mean_test_f1']
 	means5 = DTC.cv_results_['mean_test_roc_auc']
 	stds = DTC.cv_results_['std_test_f1']
-	for mean1,mean2,mean3,mean4,mean5, mean6,mean7,mean8,mean9,mean10 std, params in zip(means1,means2,means3,means4,means5, stds, DTC.cv_results_['params']):
+	for mean1,mean2,mean3,mean4,mean5, mean6,mean7,mean8,mean9,mean10, std, params in zip(means1,means2,means3,means4,means5, stds, DTC.cv_results_['params']):
 		#print("%0.3f (+/-%0.03f) for %r" % (mean4, std * 2, params))
 		arquivo.write('acurácia: %0.3f ' % mean1)
 		arquivo.write('precision: %0.3f ' % mean2)
