@@ -1,41 +1,63 @@
 import pandas as pd
 import numpy as np
+import numpy as np
+
 from sklearn.linear_model import LogisticRegression
 
 from sklearn.model_selection import train_test_split
 
-from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 
-# chunksize = 5e3
+from utils import save_results
+ 
 
-# benign_fragment_i = 4
+def LR(data):
 
-# df_class_0 = pd.read_csv(f'./fragments/benign_fragment_{benign_fragment_i}_filtered.csv', chunksize=chunksize, delimiter=';')
-# df_class_1 = pd.read_csv('./fragments/malware_fragment_filtered.csv', chunksize=chunksize, delimiter=';')
+    X = data.drop(columns=['CLASS'])
+    y = data['CLASS']
 
-# benigno = next(df_class_0)
-# maligno = next(df_class_1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
-# maligno["CLASS"] = 1
-# benigno["CLASS"] = 0
+    LR = LogisticRegression(max_iter=500).fit(X_train, y_train)
+    y_pred = LR.predict(X_test)
 
-# data = pd.concat([benigno, maligno], join='outer').fillna(0)
 
-# data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
+    cm = confusion_matrix(y_test, y_pred)
+    ac = accuracy_score(y_test, y_pred)
+    cr = classification_report(y_test, y_pred)
 
-data = pd.read_hdf('./data.h5')
-data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
+    print("accuracy: ", ac)
+    print("Confusion Matrix: \n", cm)
+    print("Classification Report: \n", cr)
 
-data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', "vt_detection", "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
+    return [
+        ac,
+        cr,
+        cm,
+    ]
 
-X = data.drop(columns=['CLASS'])
-y = data['CLASS']
+def main(fragmented):
+    if fragmented:
+        maligno = pd.read_csv('./fragments/malware_fragment_filtered.csv', delimiter=';')
+        for i in range(0, 11):
+            benigno = pd.read_csv(f'./fragments/benign_fragment_{i}_filtered.csv', delimiter=';')
+            maligno["CLASS"] = 1
+            benigno["CLASS"] = 0
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
+            data = pd.concat([benigno, maligno], join="outer").fillna(0)
 
-LR = LogisticRegression(max_iter=1000).fit(X_train, y_train)
-y_pred = LR.predict(X_test)
+            data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
+            print(f"Testando para o arquivo {i} benigno")
+            results = LR(data)
+            save_results("logistic_regression_results", title=f"Benigno {i}", content=results)
+    else:
+        data = pd.read_hdf('./data.h5')
+        data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
 
-ac = accuracy_score(y_test, y_pred)
+        data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
 
-print("ac: ", ac)
+        results = LR(data)
+        save_results("logistic_regression_results", title=f"Dataset completo", content=results)
+
+if __name__ == "__main__":
+    main(fragmented=True)
