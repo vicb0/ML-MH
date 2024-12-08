@@ -4,6 +4,7 @@
 @author: Felipe
 """
 import pandas as pd
+import numpy as np
 
 from sklearn.ensemble import GradientBoostingClassifier
 
@@ -12,20 +13,25 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score, confusion_matrix
 
 
-chunksize = 5e3
+# chunksize = 5e3
 
-df_class_0 = pd.read_csv('./fragments/benign_fragment_0_filtered.csv', chunksize=chunksize, delimiter=';')
-df_class_1 = pd.read_csv('./fragments/malware_fragment_filtered.csv', chunksize=chunksize, delimiter=';')
+# df_class_0 = pd.read_csv('./fragments/benign_fragment_0_filtered.csv', chunksize=chunksize, delimiter=';')
+# df_class_1 = pd.read_csv('./fragments/malware_fragment_filtered.csv', chunksize=chunksize, delimiter=';')
 
-benigno = next(df_class_0)
-maligno = next(df_class_1)
+# benigno = next(df_class_0)
+# maligno = next(df_class_1)
 
-maligno["CLASS"] = 1
-benigno["CLASS"] = 0
+# maligno["CLASS"] = 1
+# benigno["CLASS"] = 0
 
-data = pd.concat([benigno, maligno], join="outer").fillna(0)
+# data = pd.concat([benigno, maligno], join="outer").fillna(0)
 
-data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
+# data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
+
+data = pd.read_hdf('./data.h5')
+data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
+
+data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', "vt_detection", "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
 
 X = data.drop(columns=['CLASS'])
 y = data['CLASS']
