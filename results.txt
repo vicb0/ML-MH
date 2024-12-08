@@ -1,0 +1,38 @@
+dt_model_best using data.h5:
+Best parameters found: 
+ {'max_depth': 10, 'min_samples_split': 4}
+[[13662   190]
+ [  173  1266]]
+ac:  0.9762605454188739
+f1:  0.8746113989637305
+
+dt_model_raw with params max_Depth 10 e min_samples_split 4 using data.h5:
+[[13658   194]
+ [  172  1267]]
+ac:  0.9760643515793604
+f1:  0.8737931034482759
+
+knn_model using data.h5
+[[13669   183]
+ [  186  1253]]
+ac:  0.9758681577398469
+f1:  0.8716521739130435
+
+lr_model using data.h5
+ac:  0.9762605454188739
+
+randomForest using data.h5
+Accuracy: 0.9762270690951899
+
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       0.99      0.99      0.99     27709
+           1       0.86      0.89      0.88      2872
+
+    accuracy                           0.98     30581
+   macro avg       0.93      0.94      0.93     30581
+weighted avg       0.98      0.98      0.98     30581
+
+[[27305   404]
+ [  323  2549]]
