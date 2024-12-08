@@ -19,10 +19,13 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import plot_confusion_matrix
-import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import ConfusionMatrixDisplay
+
+from sklearn.model_selection import train_test_split
+
+import matplotlib.pyplot as plt
 
 from sklearn import tree
 import shap
@@ -53,7 +56,7 @@ def modelosRF(ds, name):
 	
 	RF=RandomForestClassifier()
 	
-	DTC_Grid=GridSearchCV(RF, param_grid=depth , cv=5, scoring={'f1', 'accuracy', 'recall', 'roc_auc',  'precision'}, refit='accuracy')
+	DTC_Grid=GridSearchCV(RF, param_grid=depth , cv=5, scoring=['f1', 'accuracy', 'recall', 'roc_auc',  'precision'], refit='accuracy')
 	DTC=DTC_Grid.fit(X_train,y_train)
     #RF=RandomForestClassifier(max_depth=10, min_samples_split=4, n_estimators=100, max_features=10 )
     #RF.fit(X_train,y_train)    
@@ -139,7 +142,7 @@ def modelosRF(ds, name):
 
 	for title, normalize in titles_options:
 		plt.savefig('Matriz_conf.png')
-		disp = plot_confusion_matrix( DTC, X_test, y_test, display_labels=class_names,cmap=plt.cm.Blues,normalize=normalize)
+		disp = ConfusionMatrixDisplay.from_estimator(DTC, X_test, y_test, display_labels=class_names,cmap=plt.cm.Blues,normalize=normalize)
 		disp.ax_.set_title(title)
 
 
@@ -189,32 +192,32 @@ def modelosRF(ds, name):
 	plt.figure()
 
 
+chunksize = 5e3
 
-#########################################################
-# leitura de dados COVID-19
-nome_base = ("TRg-3-onda-72.xlsx")
+benign_fragment_i = 4
 
-planilha=pd.read_excel(r"%s" % nome_base,sheet_name="treino")
+df_class_0 = pd.read_csv(f'./fragments/benign_fragment_{benign_fragment_i}_filtered.csv', chunksize=chunksize, delimiter=';')
+df_class_1 = pd.read_csv('./fragments/malware_fragment_filtered.csv', chunksize=chunksize, delimiter=';')
 
-X_train = DataFrame(planilha)
+benigno = next(df_class_0)
+maligno = next(df_class_1)
 
+maligno["CLASS"] = 1
+benigno["CLASS"] = 0
 
-planilha_1=pd.read_excel(r"%s" % nome_base,sheet_name="label-treino")
+data = pd.concat([benigno, maligno], join='outer').fillna(0)
 
-y_train = DataFrame(planilha_1)
+data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
 
-planilha_1=pd.read_excel(r"%s" % nome_base,sheet_name="teste")
+X = data.drop(columns=['CLASS'])
+y = data['CLASS']
 
-X_test = DataFrame(planilha_1)
- 
-planilha_1=pd.read_excel(r"%s" % nome_base,sheet_name="label-teste")
-
-y_test = DataFrame(planilha_1)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
 
 #################################
 data_sets = [(X_train, y_train),(X_test, y_test)]
-name=['sars-cov-2']
+name=['']
 #modelosDT(data_sets, name=name)
 modelosRF(data_sets, name=name)
 #plt.show()

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -6,60 +7,73 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 
 from sklearn.model_selection import train_test_split, LearningCurveDisplay, learning_curve
 
-from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+from utils import save_results
+
+def DT(data):
+    X = data.drop(columns=['CLASS'])
+    y = data['CLASS']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
+
+    DTC = DecisionTreeClassifier(criterion="gini")
+    DTC = DTC.fit(X_train, y_train)
+
+    #plot_tree(DTC)
+    #plt.show()
+
+    y_pred = DTC.predict(X_test)
+
+    cm = confusion_matrix(y_test, y_pred)
+    ac = accuracy_score(y_test, y_pred)
+    cr = classification_report(y_test, y_pred)
+
+    print("accuracy: ", ac)
+    print("Confusion Matrix: \n", cm)
+    print("Classification Report: \n", cr)
+
+    return [
+        ac,
+        cr,
+        cm,
+    ]
+
+    #
+    # train_sizes, train_scores, test_scores = learning_curve(DTC, X, y)
+    # display = LearningCurveDisplay(
+    #     train_sizes=train_sizes,
+    #     train_scores=train_scores,
+    #     test_scores=test_scores, score_name="Score")
+    # display.plot()
+    #plt.show()
+
+def main(fragmented):
+    if fragmented:
+        maligno = pd.read_csv('./fragments/malware_fragment_filtered.csv', delimiter=';')
+        for i in range(0, 11):
+            benigno = pd.read_csv(f'./fragments/benign_fragment_{i}_filtered.csv', delimiter=';')
+            maligno["CLASS"] = 1
+            benigno["CLASS"] = 0
+
+            data = pd.concat([benigno, maligno], join="outer").fillna(0)
+
+            data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
+            print(f"Testando para o arquivo {i} benigno")
+            results = DT(data)
+            save_results("decision_tree_results", title=f"Benigno {i}", content=results)
+    else:
+        data = pd.read_hdf('./data.h5')
+        data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
+
+        data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
+
+        results = DT(data)
+        save_results("decision_tree_results", title=f"Dataset completo", content=results)
 
 
-# chunksize = 5e3
+if __name__ == "__main__":
+    main(fragmented=True)
 
-# benign_fragment_i = 4
-
-# df_class_0 = pd.read_csv(f'./fragments/benign_fragment_{benign_fragment_i}_filtered.csv', chunksize=chunksize, delimiter=';')
-# df_class_1 = pd.read_csv('./fragments/malware_fragment_filtered.csv', chunksize=chunksize, delimiter=';')
-
-# benigno = next(df_class_0)
-# maligno = next(df_class_1)
-
-# maligno["CLASS"] = 1
-# benigno["CLASS"] = 0
-
-# data = pd.concat([benigno, maligno], join='outer').fillna(0)
-
-# data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
-
-data = pd.read_hdf('./data.h5')
-data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
-
-data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', "vt_detection", "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
-
-X = data.drop(columns=['CLASS'])
-y = data['CLASS']
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
-
-DTC = DecisionTreeClassifier(criterion="gini", max_depth=10, min_samples_split=4)
-DTC = DTC.fit(X_train, y_train)
-
-#plot_tree(DTC)
-#plt.show()
-
-y_pred = DTC.predict(X_test)
-
-cm = confusion_matrix(y_test, y_pred)
-print(cm)
-
-ac = accuracy_score(y_test, y_pred)
-f1 = f1_score(y_test, y_pred)
-
-print("ac: ", ac)
-print("f1: ", f1)
-
-#
-# train_sizes, train_scores, test_scores = learning_curve(DTC, X, y)
-# display = LearningCurveDisplay(
-#     train_sizes=train_sizes,
-#     train_scores=train_scores,
-#     test_scores=test_scores, score_name="Score")
-# display.plot()
-#plt.show()
 
 
