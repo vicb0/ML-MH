@@ -1,0 +1,143 @@
+Benigno 0
+0.9874256584536958
+              precision    recall  f1-score   support
+
+           0       0.98      1.00      0.99      2937
+           1       1.00      0.98      0.99      2948
+
+    accuracy                           0.99      5885
+   macro avg       0.99      0.99      0.99      5885
+weighted avg       0.99      0.99      0.99      5885
+
+[[2927   10]
+ [  64 2884]]
+Benigno 1
+0.9778571428571429
+              precision    recall  f1-score   support
+
+           0       0.97      0.99      0.98      2671
+           1       0.99      0.97      0.98      2929
+
+    accuracy                           0.98      5600
+   macro avg       0.98      0.98      0.98      5600
+weighted avg       0.98      0.98      0.98      5600
+
+[[2638   33]
+ [  91 2838]]
+Benigno 2
+0.9878787878787879
+              precision    recall  f1-score   support
+
+           0       0.98      1.00      0.99      3010
+           1       1.00      0.98      0.99      2930
+
+    accuracy                           0.99      5940
+   macro avg       0.99      0.99      0.99      5940
+weighted avg       0.99      0.99      0.99      5940
+
+[[3000   10]
+ [  62 2868]]
+Benigno 3
+0.9883838383838384
+              precision    recall  f1-score   support
+
+           0       0.98      1.00      0.99      3010
+           1       1.00      0.98      0.99      2930
+
+    accuracy                           0.99      5940
+   macro avg       0.99      0.99      0.99      5940
+weighted avg       0.99      0.99      0.99      5940
+
+[[3002    8]
+ [  61 2869]]
+Benigno 4
+0.9833881294341582
+              precision    recall  f1-score   support
+
+           0       0.98      0.99      0.98      2838
+           1       0.99      0.98      0.98      2941
+
+    accuracy                           0.98      5779
+   macro avg       0.98      0.98      0.98      5779
+weighted avg       0.98      0.98      0.98      5779
+
+[[2814   24]
+ [  72 2869]]
+Benigno 5
+0.9804065189525728
+              precision    recall  f1-score   support
+
+           0       0.97      0.98      0.98      2516
+           1       0.99      0.98      0.98      2945
+
+    accuracy                           0.98      5461
+   macro avg       0.98      0.98      0.98      5461
+weighted avg       0.98      0.98      0.98      5461
+
+[[2478   38]
+ [  69 2876]]
+Benigno 6
+0.9782925939438162
+              precision    recall  f1-score   support
+
+           0       0.97      0.99      0.98      2533
+           1       0.99      0.97      0.98      2949
+
+    accuracy                           0.98      5482
+   macro avg       0.98      0.98      0.98      5482
+weighted avg       0.98      0.98      0.98      5482
+
+[[2501   32]
+ [  87 2862]]
+Benigno 7
+0.9771047413016045
+              precision    recall  f1-score   support
+
+           0       0.97      0.98      0.98      2594
+           1       0.98      0.97      0.98      2953
+
+    accuracy                           0.98      5547
+   macro avg       0.98      0.98      0.98      5547
+weighted avg       0.98      0.98      0.98      5547
+
+[[2549   45]
+ [  82 2871]]
+Benigno 8
+0.9774684008060084
+              precision    recall  f1-score   support
+
+           0       0.97      0.98      0.98      2514
+           1       0.99      0.97      0.98      2945
+
+    accuracy                           0.98      5459
+   macro avg       0.98      0.98      0.98      5459
+weighted avg       0.98      0.98      0.98      5459
+
+[[2473   41]
+ [  82 2863]]
+Benigno 9
+0.9790979097909791
+              precision    recall  f1-score   support
+
+           0       0.97      0.99      0.98      2514
+           1       0.99      0.97      0.98      2940
+
+    accuracy                           0.98      5454
+   macro avg       0.98      0.98      0.98      5454
+weighted avg       0.98      0.98      0.98      5454
+
+[[2478   36]
+ [  78 2862]]
+Benigno 10
+0.9822467986030268
+              precision    recall  f1-score   support
+
+           0       0.94      0.94      0.94       509
+           1       0.99      0.99      0.99      2927
+
+    accuracy                           0.98      3436
+   macro avg       0.97      0.96      0.96      3436
+weighted avg       0.98      0.98      0.98      3436
+
+[[ 476   33]
+ [  28 2899]]
