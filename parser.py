@@ -52,23 +52,28 @@ def get_headers(header_type):
     return {line[:-1] for line in f.readlines()}
 
 
-def build_fragments(chunk_size=1e4):
+def build_fragments(dtypes, chunk_size=1e4):
     if not os.path.isdir("./fragments"):
         os.mkdir("./fragments")
 
     if len(os.listdir("./fragments")) > 0:
         return
 
-    df = pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=chunk_size)
+    df = pd.read_csv(
+        "./MH-100K/mh_100k_dataset.csv",
+        chunksize=chunk_size,
+        dtype=dtypes,
+        low_memory=False
+    )
     
-    for c, chunk in enumerate(df):
+    for c, chunk in enumerate(df, 1):
         chunk.loc[chunk["vt_detection"] < 4].to_csv(f"./fragments/benign_fragment_{c}.csv", index=False, sep=";")
         chunk.loc[chunk["vt_detection"] >= 4].to_csv(
             "./fragments/malware_fragment.csv",
             mode="a+",
             index=False,
             sep=';',
-            header=True if c == 0 else False
+            header=True if c == 1 else False
         )
 
 
@@ -85,13 +90,58 @@ def remove_useless_columns(file):
     df.to_csv(filtered_filename, index=False, sep=";")
 
 
+def get_dtypes():
+    # Headers that are not booleans (flags)
+    non_flags: set = get_headers("others")
+
+    def header_type(header):
+        if header in non_flags:
+            if header in {"SHA256", "NOME", "PACOTE"}:
+                return 'U'  # Unicode string
+            return 'b'  # Signed byte
+        return 'B'  # ? = Boolean, B = Unsigned byte
+
+    headers = next(pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=1)).columns.values.tolist()
+    return { header: header_type(header) for header in headers }
+
+
+def build_hdfs(dtypes):
+    malware_fragment = pd.read_csv(
+        './fragments/malware_fragment.csv',
+        index_col=False,
+        sep=';',
+        dtype=dtypes,
+        low_memory=False
+    )
+
+    c = 1
+    for file in os.listdir("./fragments"):
+        if file.startswith("malware"):
+            continue
+        benign_fragment = pd.read_csv(
+            f'./fragments/benign_fragment_{c}.csv',
+            index_col=False,
+            sep=';',
+            dtype=dtypes,
+            low_memory=False
+        )
+
+        df = pd.concat([benign_fragment, malware_fragment])
+        df.to_hdf(
+            f"./fragments/fragment_{c}.h5",
+            key="df",
+            mode="w",
+            format="f"
+        )
+        c += 1
+
+
+
 def main():
     parse_headers()
-    build_fragments()
-
-    for file in os.listdir("./fragments"):
-        if not file.endswith("_filtered.csv"):
-            remove_useless_columns(f"./fragments/{file}")
+    dtypes = get_dtypes()
+    build_fragments(dtypes=dtypes)
+    build_hdfs(dtypes=dtypes)
 
 
 if __name__ == "__main__":
