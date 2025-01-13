@@ -47,6 +47,9 @@ from time import perf_counter
 #     # Saves in hdf format for faster reading, and no need to run this script again in the future.
 #     new_df.to_hdf(to_file, key='df', mode='w')
 
-df = pd.read_hdf("./fragments/fragment_8.h5")
-print(df.loc[df["vt_detection"] >= 4].shape)
-print(df.loc[df["vt_detection"] < 4].shape)
+for i in range(1, 11 + 1):
+    df = pd.read_hdf(f"./fragments/fragment_{i}.h5")
+    print(i)
+    print(df.loc[df["vt_detection"] >= 4].shape)
+    print(df.loc[df["vt_detection"] < 4].shape)
+    print()

@@ -77,17 +77,12 @@ def build_fragments(dtypes, chunk_size=1e4):
         )
 
 
-def remove_useless_columns(file):
-    filtered_filename = f"{file[:-4]}_filtered.csv"
-    if os.path.isfile(filtered_filename):
-        return
-
-    df = pd.read_csv(file, sep=';')
-
+def remove_useless_columns(df):
     nunique = df.nunique()
     to_drop = nunique[nunique == 1].index
     df = df.drop(to_drop, axis=1)
-    df.to_csv(filtered_filename, index=False, sep=";")
+    
+    return df
 
 
 def get_dtypes():
@@ -127,6 +122,7 @@ def build_hdfs(dtypes):
         )
 
         df = pd.concat([benign_fragment, malware_fragment])
+        df = remove_useless_columns(df)
         df.to_hdf(
             f"./fragments/fragment_{c}.h5",
             key="df",
