@@ -111,7 +111,7 @@ def build_hdfs(dtypes):
 
     c = 1
     for file in os.listdir("./fragments"):
-        if file.startswith("malware"):
+        if file.startswith("malware") or file.startswith("fragment"):
             continue
         benign_fragment = pd.read_csv(
             f'./fragments/benign_fragment_{c}.csv',
@@ -122,7 +122,7 @@ def build_hdfs(dtypes):
         )
 
         df = pd.concat([benign_fragment, malware_fragment])
-        df = remove_useless_columns(df)
+        # df = remove_useless_columns(df)
         df.to_hdf(
             f"./fragments/fragment_{c}.h5",
             key="df",
@@ -131,6 +131,11 @@ def build_hdfs(dtypes):
         )
         c += 1
 
+
+vrs = pd.read_csv("variances.csv", sep=";", decimal=",")
+def drop_low_var(df, var=0.1):
+    df = df.drop(vrs.loc[vrs["variancia"] >= var, "column"], axis=1)
+    return df
 
 
 def main():
