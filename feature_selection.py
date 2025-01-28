@@ -8,7 +8,7 @@ def feature_selection(file_name, variance):
 
     df = df.loc[df.iloc[:, 1] < variance]
 
-    return df.iloc[:, 1].tolist()
+    return df.iloc[:, 0].tolist()
 
 
-#print(len(feature_selection('variances1.csv', 0.1)))
+print(feature_selection('variances1.csv', 0.1))
