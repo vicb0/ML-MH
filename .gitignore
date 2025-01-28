@@ -3,3 +3,6 @@
 /headers
 __pycache__
 data.h5
+dataset.h5
+variances.csv
+test.py
