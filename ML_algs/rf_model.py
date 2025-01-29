@@ -4,10 +4,10 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
-from utils import save_results
+from utils import save_results, drop_low_var
+
 
 def RF(data):
-
     X = data.drop(columns=['CLASS'])
     y = data['CLASS']
 
