@@ -2,12 +2,13 @@ import pandas as pd
 import numpy as np
 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
-from utils import save_results, drop_low_var
 
+from utils import drop_low_var
 
-def RF(data):
+def RF(data, variance):
+
     X = data.drop(columns=['CLASS'])
     y = data['CLASS']
 
@@ -15,62 +16,51 @@ def RF(data):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
     
     kf = StratifiedKFold(n_splits=4, shuffle=True, random_state=42) # 75% teste e 25% validação
+    
+    params ={
+        "n_estimators": [50, 100, 250], #Número de árvores na floresta
+        "criterion": ["gini", "entropy", "log_loss"], #Medição da qualidade de uma decisão tomada em um nó
+        "max_depth":[10, 20, 50, 100, 150, 200], # altura máxima da árvore
+        "min_samples_split":[8, 16, 32, 48], # Número mínimo de registros para dividir um nó em outro
+        "min_samples_leaf":[2, 4, 8, 16, 32], # Número mínimo de folhas
+    }
 
-    best_model = RandomForestClassifier() # modelo que obteve melhor resultado
-    best_score = 0
-    validation_scores = []
+    rf = GridSearchCV(
+        estimator = RandomForestClassifier(),
+        param_grid = params,
+        cv = 4,
+        verbose=2,
+        n_jobs=8,
+    )
 
-    for i, (train_index, val_index) in enumerate(kf.split(X_train, y_train), start=1):
-        print(f"Fold {i}:")
+    rf.fit(X_train, y_train)
 
-        #Divisão em treinamento e validação
-        X_train_fold, X_val_fold = X_train.iloc[train_index], X_train.iloc[val_index]
-        y_train_fold, y_val_fold = y_train.iloc[train_index], y_train.iloc[val_index]
+    best_model = rf.best_estimator_
 
-        #Treinamento
-        model = RandomForestClassifier(random_state=42)
-        model = model.fit(X_train_fold, y_train_fold)
-
-        # Avaliando o modelo
-        y_pred = model.predict(X_val_fold)
-        accuracy = accuracy_score(y_val_fold, y_pred)
-
-        if accuracy > best_score:
-            best_score, best_model = accuracy, model
-
-        validation_scores.append(accuracy)
-        print("Accuracy: ", accuracy)
-
-    #Média dos resultados
-    print("Mean: ", np.mean(validation_scores))
-
-    # Teste para o melhor modelo
     y_pred = best_model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
-    print("Melhor modelo: ")
-    print("Acurácia: ", accuracy)
+    print(f"Accuracy best model: {accuracy}") 
+
+    results = pd.DataFrame.from_dict(rf.cv_results_)
+    results.to_csv(f'random_forest_cv_results0.{variance}.csv', sep=';', index=False)  
+    print(results)
     print(classification_report(y_test, y_pred))
 
-def main(fragmented):
+def main(variance=0.01):
+    
+    for i in range(1, 12):
+        data = pd.read_hdf(f'./fragments/fragment_{i}.h5')
 
-    if fragmented:
-        for i in range(1, 12):
-            data = pd.read_hdf(f'./fragments/fragment_{i}.h5')
-            data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
+        data = drop_low_var(data, var=variance)
 
-            data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
-            print(f"Testando para o fragmento {i}")
-            results = RF(data)
-            
-            #save_results("random_forest_results", title=f"Fragmento {i}", content=results)
-    else:
-        data = pd.read_hdf('./data.h5')
         data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
 
         data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
-
-        results = RF(data)
-        save_results("random_forest_results", title=f"Dataset completo", content=results)
+        print(f"Testando para o fragmento {i}")
+        print(len(data.columns))
+        break
+        RF(data, variance)
+    
 
 if __name__ == "__main__":
-    main(fragmented=True)
+    main(variance=0.0005)
