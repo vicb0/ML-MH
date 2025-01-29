@@ -132,11 +132,6 @@ def build_hdfs(dtypes):
         c += 1
 
 
-vrs = pd.read_csv("variances.csv", sep=";", decimal=",")
-def drop_low_var(df, var=0.1):
-    return df.drop(vrs.loc[vrs["variancia"] >= var, "column"], axis=1)
-
-
 def main():
     parse_headers()
     dtypes = get_dtypes()
