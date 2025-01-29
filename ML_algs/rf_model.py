@@ -57,8 +57,7 @@ def main(variance=0.01):
 
         data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
         print(f"Testando para o fragmento {i}")
-        print(len(data.columns))
-        break
+
         RF(data, variance)
     
 
