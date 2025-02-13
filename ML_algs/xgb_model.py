@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
 from sklearn.metrics import classification_report, accuracy_score
 
 from utils import drop_low_var_by_col, drop_low_var
+
+import xgboost as xgb
 
 def GB(data, variance, col):
 
@@ -14,20 +15,26 @@ def GB(data, variance, col):
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
-    params ={
-        "n_estimators": [50, 100, 250], #Número de árvores na floresta
-        "criterion": ["friedman_mse", "squared_error"], #Medição da qualidade de uma decisão tomada em um nó
-        "max_depth":[10, 20, 50, 100, 150, 200], # altura máxima da árvore
-        "min_samples_split":[8, 16, 32, 48], # Número mínimo de registros para dividir um nó em outro
-        "min_samples_leaf":[2, 4, 8, 16, 32], # Número mínimo de folhas
+    depth={
+
+        'base_score':[0.2,0.5,0.7],
+        'gamma':[0],
+        'booster': ['gbtree'],
+        'random_state': [42],
+        'n_estimators': [10, 20, 30, 40, 50, 70, 100],
+        'learning_rate' : [0.1,0.01,0.05,0.0005],
+        'max_depth':[5, 8, 10, 15, 20, 25, 30]
     }
 
+    xgb_cl=xgb.XGBClassifier()
+
     GB = GridSearchCV(
-        estimator = GradientBoostingClassifier(),
-        param_grid = params,
+        estimator = xgb_cl,
+        param_grid = depth,
         cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42), # 75% teste e 25% validação
         verbose=2,
         n_jobs=8,
+        refit='accuracy'
     )
 
     GB.fit(X_train, y_train)
@@ -36,7 +43,7 @@ def GB(data, variance, col):
 
     y_pred = best_model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"Accuracy best model: {accuracy}") 
+    print(f"Accuracy best model: {accuracy}")
 
     results = pd.DataFrame.from_dict(GB.cv_results_)
     if col:
@@ -63,4 +70,4 @@ def main(variance=0.1, col=0):
     GB(data, variance, col)       
 
 if __name__ == "__main__":
-    main(col=4000)
+    main(col=12000)
