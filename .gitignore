@@ -1,4 +1,5 @@
 /MH-100K
+/MH-1M
 /fragments
 /headers
 __pycache__
@@ -6,3 +7,4 @@ data.h5
 dataset.h5
 variances.csv
 test.py
+.venv

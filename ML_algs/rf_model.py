@@ -3,7 +3,7 @@ import numpy as np
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
 from utils import drop_low_var
 
@@ -28,7 +28,7 @@ def RF(data, variance):
     rf = GridSearchCV(
         estimator = RandomForestClassifier(),
         param_grid = params,
-        cv = kf,
+        cv = 4,
         verbose=2,
         n_jobs=8,
     )
@@ -42,7 +42,7 @@ def RF(data, variance):
     print(f"Accuracy best model: {accuracy}") 
 
     results = pd.DataFrame.from_dict(rf.cv_results_)
-    results.to_csv(f'random_forest_cv_results{variance}.csv', sep=';', index=False)  
+    results.to_csv(f'random_forest_cv_results0.{variance}.csv', sep=';', index=False)  
     print(results)
     print(classification_report(y_test, y_pred))
 
@@ -62,4 +62,4 @@ def main(variance=0.01):
     
 
 if __name__ == "__main__":
-    main(variance=0.19) # 1972
+    main(variance=0.0005)
