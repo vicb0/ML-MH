@@ -1,52 +1,73 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
+from sklearn.metrics import classification_report, accuracy_score
 
-from sklearn.model_selection import train_test_split
+from utils import drop_low_var_by_col, drop_low_var
 
-from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score, confusion_matrix
+import xgboost as xgb
 
-from utils import save_results
-
-def GB(data):
+def GB(data, variance, col):
 
     X = data.drop(columns=['CLASS'])
     y = data['CLASS']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
-    GBC = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=4, random_state=0, min_samples_split=10,
-        min_samples_leaf=4).fit(X_train, y_train)
+    depth={
 
-    score = GBC.score(X_test, y_test)
-    print(score)
+        'base_score':[0.2,0.5,0.7],
+        'gamma':[0],
+        'booster': ['gbtree'],
+        'random_state': [42],
+        'n_estimators': [10, 20, 30, 40, 50, 70, 100],
+        'learning_rate' : [0.1,0.01,0.05,0.0005],
+        'max_depth':[5, 8, 10, 15, 20, 25, 30]
+    }
 
-    return [score]
+    xgb_cl=xgb.XGBClassifier()
 
-def main(fragmented):
+    GB = GridSearchCV(
+        estimator = xgb_cl,
+        param_grid = depth,
+        cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42), # 75% teste e 25% validação
+        verbose=2,
+        n_jobs=8,
+        refit='accuracy'
+    )
 
-    if fragmented:
-        maligno = pd.read_csv('./fragments/malware_fragment_filtered.csv', delimiter=';')
-        for i in range(0, 11):
-            benigno = pd.read_csv(f'./fragments/benign_fragment_{i}_filtered.csv', delimiter=';')
-            maligno["CLASS"] = 1
-            benigno["CLASS"] = 0
+    GB.fit(X_train, y_train)
 
-            data = pd.concat([benigno, maligno], join="outer").fillna(0)
+    best_model = GB.best_estimator_
 
-            data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
-            print(f"Testando para o arquivo {i} benigno")
-            results = GB(data)
-            save_results("gradient_boost_results", title=f"Benigno {i}", content=results)
+    y_pred = best_model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Accuracy best model: {accuracy}")
+
+    results = pd.DataFrame.from_dict(GB.cv_results_)
+    if col:
+        results.to_csv(f'xgb_cv_results{col}.csv', sep=';', index=False)  
     else:
-        data = pd.read_hdf('./data.h5')
-        data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
+        results.to_csv(f'xgb_cv_results{variance}.csv', sep=';', index=False)  
+    print(results)
+    
+    print(classification_report(y_test, y_pred))
 
-        data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
 
-        results = GB(data)
-        save_results("gradient_boost_results", title=f"Dataset completo", content=results)
+def main(variance=0.1, col=0):
+    data = pd.read_hdf(f'./fragments/fragment_1.h5')
+
+    data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
+
+    if col:
+        data = drop_low_var_by_col(data, col)
+    else:
+        data = drop_low_var(data, variance)
+
+    data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
+
+    GB(data, variance, col)       
 
 if __name__ == "__main__":
-    main(fragmented=True)
+    main(col=12000)
