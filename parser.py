@@ -20,8 +20,8 @@ class Logger(object):
 sys.stdout = Logger()
 
 
-def parse_headers():
-    if not os.path.isdir("./headers"):
+def parse_headers(overwrite=False):
+    if not os.path.isdir("./headers") and not overwrite:
         os.mkdir("./headers")
 
     headers = pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=1)
@@ -52,11 +52,11 @@ def get_headers(header_type):
     return {line[:-1] for line in f.readlines()}
 
 
-def build_fragments(dtypes, chunk_size=1e4):
+def build_fragments(dtypes, chunk_size=1e4, overwrite=False):
     if not os.path.isdir("./fragments"):
         os.mkdir("./fragments")
 
-    if len(os.listdir("./fragments")) > 0:
+    if len(os.listdir("./fragments")) > 0 and not overwrite:
         return
 
     df = pd.read_csv(
@@ -100,7 +100,10 @@ def get_dtypes():
     return { header: header_type(header) for header in headers }
 
 
-def build_hdfs(dtypes):
+def build_hdfs(dtypes, overwrite=False):
+    if os.path.isfile('./fragments/fragment_1.h5') and not overwrite:
+        return
+
     malware_fragment = pd.read_csv(
         './fragments/malware_fragment.csv',
         index_col=False,
@@ -133,10 +136,10 @@ def build_hdfs(dtypes):
 
 
 def main():
-    parse_headers()
+    parse_headers(overwrite=False)
     dtypes = get_dtypes()
-    build_fragments(dtypes=dtypes)
-    build_hdfs(dtypes=dtypes)
+    build_fragments(dtypes=dtypes, overwrite=False)
+    build_hdfs(dtypes=dtypes, overwrite=False)
 
 
 if __name__ == "__main__":

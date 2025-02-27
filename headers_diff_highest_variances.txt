@@ -258,7 +258,7 @@ apicall::landroid/content/asynctaskloader.stoploading() from MH-1M not in MH-100
 apicall::landroid/content/asynctaskloader.takecontentchanged() from MH-1M not in MH-100K
 apicall::landroid/content/broadcastreceiver$pendingresult.finish() from MH-100K not in MH-1M
 apicall::landroid/content/broadcastreceiver.abortbroadcast() from MH-1M not in MH-100K
-apicall::landroid/content/broadcastreceiver.clearabortbroadcast()    not in MH-100K
+apicall::landroid/content/broadcastreceiver.clearabortbroadcast() from MH-1M not in MH-100K
 apicall::landroid/content/broadcastreceiver.getabortbroadcast() from MH-1M not in MH-100K
 apicall::landroid/content/broadcastreceiver.getdebugunregister() from MH-1M not in MH-100K
 apicall::landroid/content/broadcastreceiver.getresultcode() from MH-1M not in MH-100K

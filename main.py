@@ -1,3 +1,5 @@
+import os
+
 import numpy
 
 
@@ -26,12 +28,19 @@ for c, line in enumerate(lines1):
         lines1[c] = f"{category}::{column}"
 
 lines1.sort()
-with open('./MH-1M/headers.txt', 'w') as f:
-    f.write("\n".join(lines1))
 #############################################################################################
 
+def mh_1m_headers(overwrite=False):
+    if os.path.isfile('./MH-1M/headers.txt') and not overwrite:
+        return
 
-def headers_diff():
+    with open('./MH-1M/headers.txt', 'w') as f:
+        f.write("\n".join(lines1))
+
+def headers_diff(overwrite=False):
+    if os.path.isfile('headers_diff.txt') and not overwrite:
+        return 
+
     # Convert the headers from MH-100K to a single file, sort and save it
     with open('./headers/apicall.txt', 'r') as f1:
         with open('./headers/intent.txt', 'r') as f2:
@@ -41,6 +50,7 @@ def headers_diff():
                     lines2.extend(f1.read().lower().split("\n"))
                     lines2.extend(f2.read().lower().split("\n"))
                     lines2.extend(f3.read().lower().split("\n"))
+                    lines2 = [el for el in lines2 if el != '']
                     lines2.sort()
                     f4.write("\n".join(lines2))
     #############################################################################################
@@ -72,7 +82,10 @@ def headers_diff():
         f.write("\n".join(logs))
 
 
-def headers_diff_highest_variances():
+def headers_diff_highest_variances(overwrite=False):
+    if os.path.isfile('headers_diff_highest_variances.txt') and not overwrite:
+        return 
+
     import pandas as pd
     from ML_algs.utils import drop_low_var_by_col
     from ML_algs.utils import drop_metadata
@@ -109,8 +122,9 @@ def headers_diff_highest_variances():
 
 
 def main():
-    # headers_diff()
-   headers_diff_highest_variances() 
+    mh_1m_headers(overwrite=False)
+    headers_diff(overwrite=True)
+    headers_diff_highest_variances(overwrite=False) 
 
 
 if __name__ == "__main__":

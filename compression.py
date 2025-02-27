@@ -6,7 +6,10 @@ from time import perf_counter
 
 
 # IF "C ERROR: OUT OF MEMORY", HALF CHUNKSIZE VALUE UNTIL VIABLE
-def compress(path, to_file, chunksize=1e4):
+def compress(path, to_file, chunksize=1e4, overwrite=False):
+    if os.path.isfile('./dataset.h5') and not overwrite:
+        return
+
     # Empty dataframe to store dataset after reading chunks and concatenating
     new_df = pd.DataFrame()
 
@@ -59,15 +62,16 @@ def compress(path, to_file, chunksize=1e4):
     df.to_hdf(to_file, key='df', mode='w')
 
 
-def generate_variances():
-    if os.path.isdir("./variances.csv"):
+def generate_variances(overwrite=False):
+    if os.path.isfile("./variances.csv") and not overwrite:
         return
 
     df = pd.read_hdf("dataset.h5")
     df = df.drop(get_headers("others"), axis=1)
     df = df.var()
-    df.to_csv("variances.csv", sep=";", float_format="%.16f", decimal=",")
+    df = pd.DataFrame({'column': df.index, 'variancia': df.values})
+    df.to_csv("variances.csv", sep=";", float_format="%.16f", decimal=",", index=False)
 
 
-compress("./MH-100K/mh_100k_dataset.csv", "./dataset.h5")
-generate_variances()
+compress("./MH-100K/mh_100k_dataset.csv", "./dataset.h5", overwrite=False)
+generate_variances(overwrite=False)
