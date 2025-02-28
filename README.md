@@ -11,4 +11,9 @@ Além disso, o parser gera os fragmentos no formato .h5, que é mais eficiente d
 Após rodar o `parser.py`, rode o `compression.py`.
 Este script irá gerar um csv com as variancias de todas as colunas (utilizado para treinar o modelo), e um .h5 do dataset MH-100K inteiro.
 
-Enfim, vá para o arquivo `main.py` e siga as instruções lá presentes para baixar o dataset MH-1M, utilizado para verificar os resultados do modelo treinado utilizando o dataset MH-100K.
+Vá para o arquivo `mh_1m_headers.py` e siga as instruções lá presentes para baixar o dataset MH-1M, utilizado para verificar os resultados do modelo treinado utilizando o dataset MH-100K.
+
+Enfim, o arquivo `mh_1m_fragments.py` gera os fragmentos do mh_1m.
+
+# Rode o arquivo `main.py`
+O script `main` irá rodar todos os passos acima automaticamente, com exceção do download dos dois datasets.

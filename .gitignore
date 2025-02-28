@@ -1,6 +1,7 @@
 /MH-100K
 /MH-1M
 /fragments
+/mh_1m_fragments
 /headers
 __pycache__
 data.h5

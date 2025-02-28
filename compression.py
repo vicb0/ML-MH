@@ -73,5 +73,17 @@ def generate_variances(overwrite=False):
     df.to_csv("variances.csv", sep=";", float_format="%.16f", decimal=",", index=False)
 
 
-compress("./MH-100K/mh_100k_dataset.csv", "./dataset.h5", overwrite=False)
-generate_variances(overwrite=False)
+def run(overwrite_dataset=False, overwrite_variances=False):
+    compress("./MH-100K/mh_100k_dataset.csv", "./dataset.h5", overwrite=overwrite_dataset)
+    generate_variances(overwrite=overwrite_variances)
+
+
+def main():
+    run(
+        overwrite_dataset=True,
+        overwrite_variances=True
+    )
+
+
+if __name__ == "__main__":
+    main()

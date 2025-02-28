@@ -21,7 +21,7 @@ sys.stdout = Logger()
 
 
 def parse_headers(overwrite=False):
-    if not os.path.isdir("./headers") and not overwrite:
+    if not os.path.isdir("./headers"):
         os.mkdir("./headers")
 
     headers = pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=1)
@@ -30,14 +30,14 @@ def parse_headers(overwrite=False):
     hs = ["apicall", "intent", "permission"]
 
     for h in hs:
-        if os.path.isfile(f"./headers/{h}.txt"):
+        if os.path.isfile(f"./headers/{h}.txt") and not overwrite:
             continue
         with open(f"./headers/{h}.txt", "w+") as f:
             for header in headers.to_list():
                 if header.lower().startswith(h):
                     f.write(header + "\n")
 
-    if os.path.isfile("./headers/others.txt"):
+    if os.path.isfile("./headers/others.txt") and not overwrite:
         return
     with open("./headers/others.txt", "w+") as f:
         for header in headers.to_list():
@@ -135,11 +135,19 @@ def build_hdfs(dtypes, overwrite=False):
         c += 1
 
 
-def main():
-    parse_headers(overwrite=False)
+def run(overwrite_headers=False, overwrite_fragments=False, overwrite_hdfs=False):
+    parse_headers(overwrite=overwrite_headers)
     dtypes = get_dtypes()
-    build_fragments(dtypes=dtypes, overwrite=False)
-    build_hdfs(dtypes=dtypes, overwrite=False)
+    build_fragments(dtypes=dtypes, overwrite=overwrite_fragments)
+    build_hdfs(dtypes=dtypes, overwrite=overwrite_hdfs)
+
+
+def main():
+    run(
+        overwrite_headers=True,
+        overwrite_fragments=True,
+        overwrite_hdfs=True
+    )
 
 
 if __name__ == "__main__":

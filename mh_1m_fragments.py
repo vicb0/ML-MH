@@ -1,0 +1,58 @@
+import os
+import math
+import numpy
+import pandas as pd
+
+from ML_algs.utils import drop_metadata
+from ML_algs.utils import drop_low_var_by_col
+
+
+def build_fragments(overwrite=False):
+    if not os.path.isdir('./mh_1m_fragments'):
+        os.mkdir('./mh_1m_fragments')
+
+    if len(os.listdir("./mh_1m_fragments")) > 0 and not overwrite:
+        return
+
+    df = pd.read_hdf('./dataset.h5')
+    df = drop_low_var_by_col(drop_metadata(df)).columns
+
+    from mh_1m_headers import DATASET_DIR
+
+    data = numpy.load(DATASET_DIR, allow_pickle=True)
+    dataset = data['data']
+    rows, cols = dataset.shape
+    new_df = pd.DataFrame({'SHA256': data['sha256'], 'CLASS': data['classes'], 'vt_detection': data['metadata'][:,6]})
+    new_df['SHA256'] = new_df['SHA256'].astype('U')
+    new_df['CLASS'] = new_df['CLASS'].astype('B')
+    new_df['vt_detection'] = new_df['vt_detection'].astype('B')
+
+    def get_col(column):
+        category, attribute = column.lower().split("::")
+        if category == 'apicall':
+            attribute = attribute[:-2]
+        new_column = f"{category}s::{attribute}"
+        idx = numpy.nonzero(data['column_names'] == new_column)[0]
+        return pd.DataFrame({column: dataset[:, idx[0]] if len(idx) > 0 else [0 for _ in range(rows)]})
+        
+    new_df = pd.concat([new_df, pd.concat([get_col(column) for column in df], axis=1)], axis=1)
+
+    for i in range(math.ceil(rows / 100_000)):
+        new_df[i * 100_000:(i * 100_000) + 100_000].to_hdf(
+            f"./mh_1m_fragments/fragment_{i + 1}.h5",
+            key="df",
+            mode="w",
+            format="f"
+        )
+
+
+def run(overwrite_fragments=False):
+    build_fragments(overwrite=overwrite_fragments)
+
+
+def main():
+    run(overwrite_fragments=True)
+
+
+if __name__ == "__main__":
+    main()
