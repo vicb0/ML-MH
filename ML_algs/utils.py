@@ -23,4 +23,4 @@ def drop_low_var(df, var=0.1):
 
 
 def drop_low_var_by_col(df, col=4000) -> pd.DataFrame:
-    return df.drop(vrs.nsmallest(len(df.columns) - col, 'variancia')["column"], axis=1)
+    return df.drop(vrs.nsmallest(len(vrs) - col, 'variancia')["column"], axis=1)
