@@ -15,13 +15,14 @@ def build_fragments(overwrite=False):
         return
 
     df = pd.read_hdf('./dataset.h5')
-    df = drop_low_var_by_col(drop_metadata(df)).columns
+    sha256s = df['SHA256'].str.upper()
+    df = drop_low_var_by_col(drop_metadata(df))
 
     from mh_1m_headers import DATASET_DIR
 
     data = numpy.load(DATASET_DIR, allow_pickle=True)
     dataset = data['data']
-    rows, cols = dataset.shape
+    rows, _ = dataset.shape
     new_df = pd.DataFrame({'SHA256': data['sha256'], 'CLASS': data['classes'], 'vt_detection': data['metadata'][:,6]})
     new_df['SHA256'] = new_df['SHA256'].astype('U')
     new_df['CLASS'] = new_df['CLASS'].astype('B')
@@ -34,8 +35,10 @@ def build_fragments(overwrite=False):
         new_column = f"{category}s::{attribute}"
         idx = numpy.nonzero(data['column_names'] == new_column)[0]
         return pd.DataFrame({column: dataset[:, idx[0]] if len(idx) > 0 else [0 for _ in range(rows)]})
-        
-    new_df = pd.concat([new_df, pd.concat([get_col(column) for column in df], axis=1)], axis=1)
+
+    new_df = pd.concat([new_df, pd.concat([get_col(column) for column in df.columns], axis=1)], axis=1)
+
+    new_df = new_df[~new_df["SHA256"].isin(sha256s)]
 
     for i in range(math.ceil(rows / 100_000)):
         new_df[i * 100_000:(i * 100_000) + 100_000].to_hdf(
