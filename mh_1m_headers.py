@@ -9,26 +9,27 @@ import numpy
 # extract full_archive.7z, rename the .npz to dataset.npz
 # run this script
 
+lines1 = []
 
-#############################################################################################
-# Loads the npz, get the columns, adapt it to be the same format as MH-100K, sort and save it
-DATASET_DIR = r'.\MH-1M\data\compressed\zip-intents-permissions-opcodes-apicalls\dataset.npz'
+def get_lines():
+    global lines1
+    #############################################################################################
+    # Loads the npz, get the columns, adapt it to be the same format as MH-100K, sort and save it
+    data = numpy.load(r'.\MH-1M\data\compressed\zip-intents-permissions-opcodes-apicalls\dataset.npz', allow_pickle=True)
 
-data = numpy.load(DATASET_DIR, allow_pickle=True)
+    lines1 = data['column_names']
 
-lines1 = data['column_names']
+    for c, line in enumerate(lines1):
+        category, column = line.split("::")
+        category = category[:-1]
 
-for c, line in enumerate(lines1):
-    category, column = line.split("::")
-    category = category[:-1]
+        if line.startswith("apicall"):
+            lines1[c] = f"{category}::{column}()"
+        else:
+            lines1[c] = f"{category}::{column}"
 
-    if line.startswith("apicall"):
-        lines1[c] = f"{category}::{column}()"
-    else:
-        lines1[c] = f"{category}::{column}"
-
-lines1.sort()
-#############################################################################################
+    lines1.sort()
+    #############################################################################################
 
 def mh_1m_headers(overwrite=False):
     if os.path.isfile('./MH-1M/headers.txt') and not overwrite:
@@ -123,6 +124,7 @@ def headers_diff_highest_variances(overwrite=False):
 
 
 def run(overwrite_mh1m_headers=False, overwrite_headers_diff=False, overwrite_headers_diff_highest_variances=False):
+    get_lines()
     mh_1m_headers(overwrite=overwrite_mh1m_headers)
     headers_diff(overwrite=overwrite_headers_diff)
     headers_diff_highest_variances(overwrite=overwrite_headers_diff_highest_variances) 

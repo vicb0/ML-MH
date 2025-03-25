@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from parser import get_headers
+from parser100k import get_headers
 
 from time import perf_counter
 
@@ -62,26 +62,13 @@ def compress(path, to_file, chunksize=1e4, overwrite=False):
     df.to_hdf(to_file, key='df', mode='w')
 
 
-def generate_variances(overwrite=False):
-    if os.path.isfile("./variances.csv") and not overwrite:
-        return
-
-    df = pd.read_hdf("dataset.h5")
-    df = df.drop(get_headers("others"), axis=1)
-    df = df.var()
-    df = pd.DataFrame({'column': df.index, 'variancia': df.values})
-    df.to_csv("variances.csv", sep=";", float_format="%.16f", decimal=",", index=False)
-
-
-def run(overwrite_dataset=False, overwrite_variances=False):
+def run(overwrite_dataset=False):
     compress("./MH-100K/mh_100k_dataset.csv", "./dataset.h5", overwrite=overwrite_dataset)
-    generate_variances(overwrite=overwrite_variances)
 
 
 def main():
     run(
-        overwrite_dataset=True,
-        overwrite_variances=True
+        overwrite_dataset=True
     )
 
 

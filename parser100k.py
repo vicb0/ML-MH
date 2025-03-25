@@ -3,26 +3,9 @@ import sys
 import pandas as pd
 
 
-LOG = True
-
-
-class Logger(object):
-    def __init__(self):
-        self.log = LOG
-        self.terminal = sys.stdout
-    
-    def write(self, msg):
-        if self.log:
-            self.terminal.write(msg)
-
-    def flush(self):
-        pass
-sys.stdout = Logger()
-
-
 def parse_headers(overwrite=False):
-    if not os.path.isdir("./headers"):
-        os.mkdir("./headers")
+    if not os.path.isdir("./headers100k"):
+        os.mkdir("./headers100k")
 
     headers = pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=1)
     headers = next(headers).columns
@@ -30,16 +13,16 @@ def parse_headers(overwrite=False):
     hs = ["apicall", "intent", "permission"]
 
     for h in hs:
-        if os.path.isfile(f"./headers/{h}.txt") and not overwrite:
+        if os.path.isfile(f"./headers100k/{h}.txt") and not overwrite:
             continue
-        with open(f"./headers/{h}.txt", "w+") as f:
+        with open(f"./headers100k/{h}.txt", "w+") as f:
             for header in headers.to_list():
                 if header.lower().startswith(h):
                     f.write(header + "\n")
 
-    if os.path.isfile("./headers/others.txt") and not overwrite:
+    if os.path.isfile("./headers100k/others.txt") and not overwrite:
         return
-    with open("./headers/others.txt", "w+") as f:
+    with open("./headers100k/others.txt", "w+") as f:
         for header in headers.to_list():
             headerlow = header.lower()
             if headerlow.startswith("apicall") or headerlow.startswith("permission") or headerlow.startswith("intent"):
@@ -48,15 +31,15 @@ def parse_headers(overwrite=False):
 
 
 def get_headers(header_type):
-    f = open(f"./headers/{header_type}.txt", "r")
+    f = open(f"./headers100k/{header_type}.txt", "r")
     return {line[:-1] for line in f.readlines()}
 
 
 def build_fragments(dtypes, chunk_size=1e4, overwrite=False):
-    if not os.path.isdir("./fragments"):
-        os.mkdir("./fragments")
+    if not os.path.isdir("./fragments100k"):
+        os.mkdir("./fragments100k")
 
-    if len(os.listdir("./fragments")) > 0 and not overwrite:
+    if len(os.listdir("./fragments100k")) > 0 and not overwrite:
         return
 
     df = pd.read_csv(
@@ -67,22 +50,14 @@ def build_fragments(dtypes, chunk_size=1e4, overwrite=False):
     )
     
     for c, chunk in enumerate(df, 1):
-        chunk.loc[chunk["vt_detection"] < 4].to_csv(f"./fragments/benign_fragment_{c}.csv", index=False, sep=";")
+        chunk.loc[chunk["vt_detection"] < 4].to_csv(f"./fragments100k/benign_fragment_{c}.csv", index=False, sep=";")
         chunk.loc[chunk["vt_detection"] >= 4].to_csv(
-            "./fragments/malware_fragment.csv",
+            "./fragments100k/malware_fragment.csv",
             mode="a+",
             index=False,
             sep=';',
             header=True if c == 1 else False
         )
-
-
-def remove_useless_columns(df):
-    nunique = df.nunique()
-    to_drop = nunique[nunique == 1].index
-    df = df.drop(to_drop, axis=1)
-    
-    return df
 
 
 def get_dtypes():
@@ -101,11 +76,11 @@ def get_dtypes():
 
 
 def build_hdfs(dtypes, overwrite=False):
-    if os.path.isfile('./fragments/fragment_1.h5') and not overwrite:
+    if os.path.isfile('./fragments100k/fragment_1.h5') and not overwrite:
         return
 
     malware_fragment = pd.read_csv(
-        './fragments/malware_fragment.csv',
+        './fragments100k/malware_fragment.csv',
         index_col=False,
         sep=';',
         dtype=dtypes,
@@ -113,11 +88,11 @@ def build_hdfs(dtypes, overwrite=False):
     )
 
     c = 1
-    for file in os.listdir("./fragments"):
+    for file in os.listdir("./fragments100k"):
         if file.startswith("malware") or file.startswith("fragment"):
             continue
         benign_fragment = pd.read_csv(
-            f'./fragments/benign_fragment_{c}.csv',
+            f'./fragments100k/benign_fragment_{c}.csv',
             index_col=False,
             sep=';',
             dtype=dtypes,
@@ -125,9 +100,9 @@ def build_hdfs(dtypes, overwrite=False):
         )
 
         df = pd.concat([benign_fragment, malware_fragment])
-        # df = remove_useless_columns(df)
+
         df.to_hdf(
-            f"./fragments/fragment_{c}.h5",
+            f"./fragments100k/fragment_{c}.h5",
             key="df",
             mode="w",
             format="f"

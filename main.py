@@ -1,39 +1,43 @@
 def main():
-    # import numpy
-    # import pandas as pd
-    # from ML_algs.utils import drop_low_var_by_col, drop_metadata
-    # from mh_1m_headers import DATASET_DIR
-    # import pickle
+    from parser100k import run as parser_run_100k
+    from parser1m import run as parser_run_1m
+    from compression import run as compression
+    from mh_1m_headers import run as mh1m_headers
+    from mh_1m_fragments_for_100k_model import run as mh_1m_fragments_for_100k_model
+    from variances import run as generate_variances
 
-    # with open('results-mh1M.pkl', 'rb') as f:
-    #     a = pickle.load(f)
-    # print(a)
-    # return
-    from parser import run as parser_run
-    from compression import run as compression_run
-    from mh_1m_headers import run as mh1m_headers_run
-    from mh_1m_fragments import run as mh1m_fragments_run
-    
-    parser_run(
+    parser_run_100k(
         overwrite_headers=False,
         overwrite_fragments=False,
         overwrite_hdfs=False
     )
 
-    compression_run(
-        overwrite_dataset=False,
-        overwrite_variances=False,
+    compression(
+        overwrite_dataset=False
     )
 
-    mh1m_headers_run(
-        overwrite_headers_diff=False,
-        overwrite_headers_diff_highest_variances=False,
-        overwrite_mh1m_headers=False
+    parser_run_1m(
+        overwrite_headers=False,
+        overwrite_fragments=False,
+        overwrite_hdfs=False
     )
 
-    mh1m_fragments_run(
-        overwrite_fragments=False
+    generate_variances(
+        overwrite_variances_100k=False,
+        overwrite_variances_1m=False
     )
+
+    # This was used for analyzing the differences between the two datasets,
+    # which helped when building the data for testing the 100k model using 1m samples.
+    # mh1m_headers(
+    #     overwrite_headers_diff=False,
+    #     overwrite_headers_diff_highest_variances=False,
+    #     overwrite_mh1m_headers=False
+    # )
+
+    # mh_1m_fragments_for_100k_model(
+    #     overwrite_fragments=False
+    # )
 
 
 if __name__ == "__main__":

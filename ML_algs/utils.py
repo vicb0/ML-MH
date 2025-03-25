@@ -17,10 +17,10 @@ def save_results(file_name:str, title:str, content:list):
     f.close()
 
 
-vrs = pd.read_csv("variances.csv", sep=";", decimal=",")
+vrs100k = pd.read_csv("variances100k.csv", sep=";", decimal=",")
 def drop_low_var(df, var=0.1):
-    return df.drop(vrs.loc[vrs["variancia"] <= var, "column"], axis=1)
+    return df.drop(vrs100k.loc[vrs100k["variancia"] <= var, "column"], axis=1)
 
 
 def drop_low_var_by_col(df, col=4000) -> pd.DataFrame:
-    return df.drop(vrs.nsmallest(len(vrs) - col, 'variancia')["column"], axis=1)
+    return df.drop(vrs100k.nsmallest(len(vrs100k) - col, 'variancia')["column"], axis=1)

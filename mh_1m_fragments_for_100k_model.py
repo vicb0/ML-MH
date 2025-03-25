@@ -8,20 +8,20 @@ from ML_algs.utils import drop_low_var_by_col
 
 
 def build_fragments(overwrite=False):
-    if not os.path.isdir('./mh_1m_fragments'):
-        os.mkdir('./mh_1m_fragments')
+    if not os.path.isdir('./1m_fragments_for_100k_model'):
+        os.mkdir('./1m_fragments_for_100k_model')
 
-    if len(os.listdir("./mh_1m_fragments")) > 0 and not overwrite:
+    if len(os.listdir("./1m_fragments_for_100k_model")) > 0 and not overwrite:
         return
 
     df = pd.read_hdf('./dataset.h5')
     sha256s = df['SHA256'].str.upper()
     df = drop_low_var_by_col(drop_metadata(df))
 
-    from mh_1m_headers import DATASET_DIR
+    data = numpy.load(r'.\MH-1M\data\compressed\zip-intents-permissions-opcodes-apicalls\dataset.npz', allow_pickle=True)
 
-    data = numpy.load(DATASET_DIR, allow_pickle=True)
     dataset = data['data']
+
     rows, _ = dataset.shape
     new_df = pd.DataFrame({'SHA256': data['sha256'], 'CLASS': data['classes'], 'vt_detection': data['metadata'][:,6]})
     new_df['SHA256'] = new_df['SHA256'].astype('U')
@@ -42,7 +42,7 @@ def build_fragments(overwrite=False):
 
     for i in range(math.ceil(rows / 100_000)):
         new_df[i * 100_000:(i * 100_000) + 100_000].to_hdf(
-            f"./mh_1m_fragments/fragment_{i + 1}.h5",
+            f"./1m_fragments_for_100k_model/fragment_{i + 1}.h5",
             key="df",
             mode="w",
             format="f"
@@ -54,7 +54,10 @@ def run(overwrite_fragments=False):
 
 
 def main():
-    run(overwrite_fragments=True)
+    run(
+        overwrite_fragments=True,
+        dataset_1m=None
+    )
 
 
 if __name__ == "__main__":
