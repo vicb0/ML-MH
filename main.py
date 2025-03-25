@@ -1,10 +1,10 @@
 def main():
     from parser100k import run as parser_run_100k
-    from parser1m import run as parser_run_1m
     from compression import run as compression
+    from parser1m import run as parser_run_1m
+    from variances import run as generate_variances
     from mh_1m_headers import run as mh1m_headers
     from mh_1m_fragments_for_100k_model import run as mh_1m_fragments_for_100k_model
-    from variances import run as generate_variances
 
     parser_run_100k(
         overwrite_headers=False,
