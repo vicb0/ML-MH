@@ -89,11 +89,11 @@ def headers_diff_highest_variances(overwrite=False):
         return 
 
     import pandas as pd
-    from ML_algs.utils import drop_low_var_by_col
+    from ML_algs.utils import drop_low_var_by_col_100k
     from ML_algs.utils import drop_metadata
 
     df = pd.read_hdf('./dataset.h5')
-    df = drop_low_var_by_col(drop_metadata(df))
+    df = drop_low_var_by_col_100k(drop_metadata(df))
     lines2 = sorted(map(lambda x: x.lower(), df.columns.to_list()))
 
     # Compare the two files

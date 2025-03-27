@@ -4,7 +4,7 @@ import numpy
 import pandas as pd
 
 from ML_algs.utils import drop_metadata
-from ML_algs.utils import drop_low_var_by_col
+from ML_algs.utils import drop_low_var_by_col_100k
 
 
 def build_fragments(overwrite=False):
@@ -16,7 +16,7 @@ def build_fragments(overwrite=False):
 
     df = pd.read_hdf('./dataset.h5')
     sha256s = df['SHA256'].str.upper()
-    df = drop_low_var_by_col(drop_metadata(df))
+    df = drop_low_var_by_col_100k(drop_metadata(df))
 
     data = numpy.load(r'.\MH-1M\data\compressed\zip-intents-permissions-opcodes-apicalls\dataset.npz', allow_pickle=True)
 
@@ -55,8 +55,7 @@ def run(overwrite_fragments=False):
 
 def main():
     run(
-        overwrite_fragments=True,
-        dataset_1m=None
+        overwrite_fragments=True
     )
 
 

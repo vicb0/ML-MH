@@ -5,6 +5,7 @@ def main():
     from variances import run as generate_variances
     from mh_1m_headers import run as mh1m_headers
     from mh_1m_fragments_for_100k_model import run as mh_1m_fragments_for_100k_model
+    from mh_100k_fragments_for_1m_model import run as mh_100k_fragments_for_1m_model
 
     parser_run_100k(
         overwrite_headers=False,
@@ -36,6 +37,10 @@ def main():
     # )
 
     # mh_1m_fragments_for_100k_model(
+    #     overwrite_fragments=False
+    # )
+
+    # mh_100k_fragments_for_1m_model(
     #     overwrite_fragments=False
     # )
 

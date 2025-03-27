@@ -3,6 +3,7 @@
 /fragments100k
 /fragments1m
 /1m_fragments_for_100k_model
+/100k_fragments_for_1m_model
 /headers100k
 /headers1m
 __pycache__

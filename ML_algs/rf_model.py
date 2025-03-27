@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
 from sklearn.metrics import classification_report, accuracy_score
 
-from utils import drop_low_var_by_col
+from utils import drop_low_var_by_col_100k
 
 def RF(data, variance):
 
@@ -63,7 +63,7 @@ def main(variance=0.01, col=4000):
     for i in range(1, 12):
         data = pd.read_hdf(f'./fragments/fragment_{i}.h5')
 
-        data = drop_low_var_by_col(data, col=col)
+        data = drop_low_var_by_col_100k(data, col=col)
 
         data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
         

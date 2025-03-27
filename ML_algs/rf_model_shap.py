@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
 
-from utils import drop_low_var
+from utils import drop_low_var_100k
 
 def RF(data):
 
@@ -57,7 +57,7 @@ def RF(data):
 
 def main(variance=0.01):
     data = pd.read_hdf(f'./fragments/fragment_1.h5')
-    data = drop_low_var(data, var=variance)
+    data = drop_low_var_100k(data, var=variance)
     data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
     data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
 

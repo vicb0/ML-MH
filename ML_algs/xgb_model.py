@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
 from sklearn.metrics import classification_report, accuracy_score
 
-from utils import drop_low_var_by_col, drop_low_var
+from utils import drop_low_var_by_col_100k, drop_low_var_100k
 
 import xgboost as xgb
 
@@ -61,9 +61,9 @@ def main(variance=0.1, col=0):
     data['CLASS'] = np.where(data['vt_detection'] < 4, 0, 1)
 
     if col:
-        data = drop_low_var_by_col(data, col)
+        data = drop_low_var_by_col_100k(data, col)
     else:
-        data = drop_low_var(data, variance)
+        data = drop_low_var_100k(data, variance)
 
     data = data.drop(columns=['SHA256', 'NOME', 'PACOTE', 'API_MIN', 'API', 'vt_detection', "VT_Malware_Deteccao", "AZ_Malware_Deteccao"])
 
