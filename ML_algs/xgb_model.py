@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
-from sklearn.metrics import classification_report, accuracy_score, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report, accuracy_score, recall_score, precision_score, ConfusionMatrixDisplay
 
 from utils import drop_low_var_by_col_100k, drop_low_var_100k
 
@@ -42,8 +42,9 @@ def GB(data, variance, col):
     best_model = GB.best_estimator_
 
     y_pred = best_model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f"Accuracy best model: {accuracy}")
+    print(f"Accuracy best model: {accuracy_score(y_test, y_pred)}")
+    print(f"Precision best model: {precision_score(y_test, y_pred)}")
+    print(f"Recall best model: {recall_score(y_test, y_pred)}")
 
     results = pd.DataFrame.from_dict(GB.cv_results_)
     print(results)
