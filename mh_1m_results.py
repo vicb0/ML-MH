@@ -4,7 +4,7 @@ from sklearn.metrics import confusion_matrix
 
 results = {}
 
-with open('results-mh1M.pkl', 'rb') as f:
+with open('results_mh1m_100000.pkl', 'rb') as f:
     results = pickle.load(f)
 
 samples = 0

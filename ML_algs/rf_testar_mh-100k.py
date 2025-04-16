@@ -30,7 +30,7 @@ def RF(data, cols=4000, size=10_000):
 
     ## Best params found for MH-1M
     params ={
-        "n_estimators": [100],
+        "n_estimators": [250],
         "criterion": ["entropy"],
         "max_depth":[50],
         "min_samples_split":[8],
@@ -59,6 +59,7 @@ def RF(data, cols=4000, size=10_000):
     print(confusion_matrix(y_test, y_pred))
 
     results = []
+    cm_total = np.ndarray((2, 2))
 
     print("Teste dos fragmentos do MH-100k")
     for i in range(1, 12):
@@ -76,12 +77,19 @@ def RF(data, cols=4000, size=10_000):
         y_pred = best_model.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
         print(f"Accuracy best model: {accuracy}")
-
+        cm = confusion_matrix(y_test, y_pred)
+        print(cm)
+        
+        cm_total += cm
         results.append({
             "samples": len(X_test),
             "accuracy": accuracy,
-            "confusion_matrix": confusion_matrix(y_test, y_pred)
+            "confusion_matrix": cm
         })
+
+    print('confusion matrix total:')
+    print(cm_total)
+
     with open(f'results_mh1m_{size}.pkl', 'wb') as f:
         pickle.dump(results, f)
 

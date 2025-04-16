@@ -48,13 +48,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    import pickle
-    with open('results_mh1m_100000.pkl', 'rb') as f:
-        data = pickle.load(f)
-
-    for result in data:
-        print(result['accuracy'])
-        for line in result['confusion_matrix']:
-            print(line)
-        print()
+    main()
