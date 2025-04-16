@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 
 from utils import get_high_var_by_col_1m
 
-def RF(data, cols=4000):
+def RF(data, cols=4000, size=10_000):
 
     X = data.drop(columns=['CLASS'])
     y = data['CLASS']
@@ -68,7 +68,7 @@ def RF(data, cols=4000):
 
         mh100k = mh100k.drop(columns=['SHA256', 'vt_detection'])
 
-        mh100k = mh100k.reindex(columns=data.columns)
+        # mh100k = mh100k.reindex(columns=data.columns)
 
         X_test = mh100k.drop(columns=['CLASS'])
         y_test = mh100k["CLASS"]
@@ -82,17 +82,20 @@ def RF(data, cols=4000):
             "accuracy": accuracy,
             "confusion_matrix": confusion_matrix(y_test, y_pred)
         })
-    with open('results_mh1M_100kmodel', 'wb') as f:
+    with open(f'results_mh1m_{size}.pkl', 'wb') as f:
         pickle.dump(results, f)
 
-def main(col=4000, filename=''):
+def main(col=4000, size=10_000, filename=''):
 
-    data = pd.read_hdf(filename)
-    cols = get_high_var_by_col_1m(col=4000).tolist()
+    data = pd.read_hdf(f"{filename}{size}.h5")
+
+    cols = get_high_var_by_col_1m(col=4000).sort_index()
+    cols = cols + cols.groupby(cols).cumcount().astype(str).replace({'0':''})
+    cols = cols.tolist()
     cols.append("CLASS")
     data = data[cols]
 
-    RF(data, col)
+    RF(data, col, size)
 
 if __name__ == "__main__":
-    main(col=4000, filename='balanced_fragment.h5')
+    main(col=4000, size=100_000, filename='./fragments1m/balanced_fragment_')

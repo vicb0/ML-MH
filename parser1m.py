@@ -55,12 +55,12 @@ def split_1m(overwrite=False):
         )
 
 
-def build_hdf(overwrite=False, n=1):
+def build_hdf(overwrite=False):
     if os.path.isfile('./fragments1m/balanced_fragment.h5') and not overwrite:
         return
 
     data = np.load(r'.\MH-1M\data\compressed\zip-intents-permissions-opcodes-apicalls\dataset.npz', allow_pickle=True)
-    headers = data['column_names'].tolist()
+    headers = data['column_names'].tolist() + ['CLASS']
     vt_detection = data['metadata'][:,6]
 
     benign = []
@@ -76,43 +76,48 @@ def build_hdf(overwrite=False, n=1):
 
     random.shuffle(indeces)
 
-    c = 0
-    SIZE = 30_000
-    for index in indeces:
+    SIZE = 100_000
+    remaining_malware = remaining_benign = SIZE
+    for c, index in enumerate(indeces):
         data = np.load(f'./fragments1m/fragment_{index}.npz')
         data = data['arr']
 
-        if len(malware) < SIZE:
+        if remaining_malware > 0:
             malwares = data[vt_detection[(index - 1) * 100_000:index * 100_000] >= 4]
-            filter_indices = np.random.choice(range(len(malwares)), min(SIZE - len(malware), SIZE // len(indeces) + 1), replace=False)
+            filter_indices = np.random.choice(range(len(malwares)), min([remaining_malware, remaining_malware // (len(indeces) - c), len(malwares)]), replace=False)
+            remaining_malware -= len(filter_indices)
             malwares = np.take(malwares, filter_indices, axis=0)
-            malware.extend(malwares.tolist())
-            
-        if len(benign) < SIZE:
+            malwares = malwares.astype(np.uint8)
+            malware.extend(malwares)
+
+        if remaining_benign > 0:
             benigns = data[vt_detection[(index - 1) * 100_000:index * 100_000] < 4]
-            filter_indices = np.random.choice(range(len(benigns)), min(SIZE - len(benign), SIZE // len(indeces) + 1), replace=False)
+            filter_indices = np.random.choice(range(len(benigns)), min([remaining_benign, remaining_benign // (len(indeces) - c), len(benigns)]), replace=False)
+            remaining_benign -= len(filter_indices)
             benigns = np.take(benigns, filter_indices, axis=0)
-            benign.extend(benigns.tolist())
+            benigns = benigns.astype(np.uint8)
+            benign.extend(benigns)
 
         if len(benign) >= SIZE and len(malware) >= SIZE:
             break
 
-        c += 1
+    class_ = np.array([0]*len(benign) + [1]*len(malware), dtype=np.uint8).reshape(-1, 1)
+    data = np.vstack([benign, malware])
+    data = np.hstack([data, class_])
 
-    benign.extend(malware)
-    df = pd.DataFrame(
-        benign,
+    del class_
+    del malware
+    del benign
+    del vt_detection
+
+    headers = pd.Series(headers)
+    headers = headers + headers.groupby(headers).cumcount().astype(str).replace({'0':''})
+
+    pd.DataFrame(
+        data=data,
         columns=headers,
         dtype=np.uint8
-    )
-
-    class_df = pd.DataFrame({'CLASS': [0]*SIZE + [1]*SIZE})
-    df = pd.concat([df, class_df], axis=1)
-
-    s = df.columns.to_series()
-    df.columns = s + s.groupby(s).cumcount().astype(str).replace({'0':''})
-
-    df.to_hdf(
+    ).to_hdf(
         f"./fragments1m/balanced_fragment_{SIZE}.h5",
         key="df",
         mode="w",
