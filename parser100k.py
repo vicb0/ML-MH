@@ -15,7 +15,7 @@ def build_fragments(dtypes, chunk_size=1e4, overwrite=False):
         return
 
     df = pd.read_csv(
-        "./dataset.h5",
+        "./MH-100K/mh_100k_dataset.csv",
         chunksize=chunk_size,
         dtype=dtypes,
         low_memory=False
@@ -43,7 +43,7 @@ def get_dtypes():
             return 'b'  # Signed byte
         return 'B'  # ? = Boolean, B = Unsigned byte
 
-    headers = next(pd.read_hdf("./dataset.h5", chunksize=1)).columns.values.tolist()
+    headers = next(pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=1)).columns.values.tolist()
     return { header: header_type(header) for header in headers }
 
 

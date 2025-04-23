@@ -76,7 +76,7 @@ def build_hdf(overwrite=False):
 
     random.shuffle(indeces)
 
-    SIZE = 100_000
+    SIZE = 10_000
     remaining_malware = remaining_benign = SIZE
     for c, index in enumerate(indeces):
         data = np.load(f'./fragments1m/fragment_{index}.npz')

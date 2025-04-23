@@ -18,7 +18,7 @@ def build_fragments(overwrite=False):
     data = numpy.load(r'.\MH-1M\data\compressed\zip-intents-permissions-opcodes-apicalls\dataset.npz', allow_pickle=True)
     sha256s = map(lambda x: x.lower(), data['sha256'])
     
-    headers = get_high_var_by_col_1m().sort_index()
+    headers = pd.Series(data['column_names']) #  get_high_var_by_col_1m().sort_index()
     headers = headers + headers.groupby(headers).cumcount().astype(str).replace({'0':''})
 
     dataset = pd.read_hdf('./dataset.h5')

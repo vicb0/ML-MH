@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearc
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
 from utils import get_high_var_by_col_1m
+from utils import drop_metadata
 
 def RF(data, cols=4000, size=10_000):
 
@@ -67,7 +68,7 @@ def RF(data, cols=4000, size=10_000):
 
         mh100k['CLASS'] = np.where(mh100k['vt_detection'] < 4, 0, 1)
 
-        mh100k = mh100k.drop(columns=['SHA256', 'vt_detection'])
+        mh100k = mh100k[data.columns.to_list()] #  mh100k.drop(columns=['SHA256', 'vt_detection'])
 
         # mh100k = mh100k.reindex(columns=data.columns)
 
@@ -93,17 +94,34 @@ def RF(data, cols=4000, size=10_000):
     with open(f'results_mh1m_{size}.pkl', 'wb') as f:
         pickle.dump(results, f)
 
-def main(col=4000, size=10_000, filename=''):
-
+def main(col, size, filename):
     data = pd.read_hdf(f"{filename}{size}.h5")
+    cols1m = data.columns.to_list()
 
-    cols = get_high_var_by_col_1m(col=4000).sort_index()
-    cols = cols + cols.groupby(cols).cumcount().astype(str).replace({'0':''})
-    cols = cols.tolist()
-    cols.append("CLASS")
-    data = data[cols]
+    cols100k = next(pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=1))
+    cols100k = pd.Series(drop_metadata(cols100k).columns).str.lower()
+    cols100k = cols100k + cols100k.groupby(cols100k).cumcount().astype(str).replace({'0':''})
+    cols100k = cols100k.to_list()
+
+    common = []
+    for column in cols1m:
+        if column == 'CLASS':
+            continue
+        category, attribute = column.lower().split("::")
+        if category == 'apicalls':
+            attribute = f'{attribute}()'
+        new_column = f"{category[:-1]}::{attribute}"
+
+        if new_column in cols100k:
+            common.append(column)
+    common.append("CLASS")
+    # cols1m = get_high_var_by_col_1m(col=4000).sort_index()
+    # cols1m = cols + cols.groupby(cols).cumcount().astype(str).replace({'0':''})
+    # cols1m = cols.tolist()
+    # cols1m.append("CLASS")
+    data = data[common]
 
     RF(data, col, size)
 
 if __name__ == "__main__":
-    main(col=4000, size=100_000, filename='./fragments1m/balanced_fragment_')
+    main(col=4000, size=120_000, filename='./fragments1m/balanced_fragment_')
