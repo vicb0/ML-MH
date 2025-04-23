@@ -124,4 +124,4 @@ def main(col, size, filename):
     RF(data)
 
 if __name__ == "__main__":
-    main(col=4000, size=10_000, filename='./fragments1m/balanced_fragment_')
+    main(col=4000, size=120_000, filename='./fragments1m/balanced_fragment_')
