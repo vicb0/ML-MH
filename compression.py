@@ -5,13 +5,37 @@ from parser100k import get_headers
 from time import perf_counter
 
 
+def parse_headers(overwrite=False):
+    if not os.path.isdir("./headers100k"):
+        os.mkdir("./headers100k")
+
+    headers = pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=1)
+    headers = next(headers).columns
+
+    hs = ["apicall", "intent", "permission"]
+
+    for h in hs:
+        if os.path.isfile(f"./headers100k/{h}.txt") and not overwrite:
+            continue
+        with open(f"./headers100k/{h}.txt", "w+") as f:
+            for header in headers.to_list():
+                if header.lower().startswith(h):
+                    f.write(header + "\n")
+
+    if os.path.isfile("./headers100k/others.txt") and not overwrite:
+        return
+    with open("./headers100k/others.txt", "w+") as f:
+        for header in headers.to_list():
+            headerlow = header.lower()
+            if headerlow.startswith("apicall") or headerlow.startswith("permission") or headerlow.startswith("intent"):
+                continue
+            f.write(header + "\n")
+
+
 # IF "C ERROR: OUT OF MEMORY", HALF CHUNKSIZE VALUE UNTIL VIABLE
 def compress(path, to_file, chunksize=1e4, overwrite=False):
     if os.path.isfile('./dataset.h5') and not overwrite:
         return
-
-    # Empty dataframe to store dataset after reading chunks and concatenating
-    new_df = pd.DataFrame()
 
     # Headers that are not booleans (flags)
     non_flags: set = get_headers("others")
@@ -62,12 +86,14 @@ def compress(path, to_file, chunksize=1e4, overwrite=False):
     df.to_hdf(to_file, key='df', mode='w')
 
 
-def run(overwrite_dataset=False):
+def run(overwrite_dataset=False, overwrite_headers=False):
+    parse_headers(overwrite=overwrite_headers)
     compress("./MH-100K/mh_100k_dataset.csv", "./dataset.h5", overwrite=overwrite_dataset)
 
 
 def main():
     run(
+        overwrite_headers=True,
         overwrite_dataset=True
     )
 

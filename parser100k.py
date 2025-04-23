@@ -1,33 +1,5 @@
 import os
-import sys
 import pandas as pd
-
-
-def parse_headers(overwrite=False):
-    if not os.path.isdir("./headers100k"):
-        os.mkdir("./headers100k")
-
-    headers = pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=1)
-    headers = next(headers).columns
-
-    hs = ["apicall", "intent", "permission"]
-
-    for h in hs:
-        if os.path.isfile(f"./headers100k/{h}.txt") and not overwrite:
-            continue
-        with open(f"./headers100k/{h}.txt", "w+") as f:
-            for header in headers.to_list():
-                if header.lower().startswith(h):
-                    f.write(header + "\n")
-
-    if os.path.isfile("./headers100k/others.txt") and not overwrite:
-        return
-    with open("./headers100k/others.txt", "w+") as f:
-        for header in headers.to_list():
-            headerlow = header.lower()
-            if headerlow.startswith("apicall") or headerlow.startswith("permission") or headerlow.startswith("intent"):
-                continue
-            f.write(header + "\n")
 
 
 def get_headers(header_type):
@@ -43,7 +15,7 @@ def build_fragments(dtypes, chunk_size=1e4, overwrite=False):
         return
 
     df = pd.read_csv(
-        "./MH-100K/mh_100k_dataset.csv",
+        "./dataset.h5",
         chunksize=chunk_size,
         dtype=dtypes,
         low_memory=False
@@ -71,7 +43,7 @@ def get_dtypes():
             return 'b'  # Signed byte
         return 'B'  # ? = Boolean, B = Unsigned byte
 
-    headers = next(pd.read_csv("./MH-100K/mh_100k_dataset.csv", chunksize=1)).columns.values.tolist()
+    headers = next(pd.read_hdf("./dataset.h5", chunksize=1)).columns.values.tolist()
     return { header: header_type(header) for header in headers }
 
 
@@ -110,8 +82,7 @@ def build_hdfs(dtypes, overwrite=False):
         c += 1
 
 
-def run(overwrite_headers=False, overwrite_fragments=False, overwrite_hdfs=False):
-    parse_headers(overwrite=overwrite_headers)
+def run(overwrite_fragments=False, overwrite_hdfs=False):
     dtypes = get_dtypes()
     build_fragments(dtypes=dtypes, overwrite=overwrite_fragments)
     build_hdfs(dtypes=dtypes, overwrite=overwrite_hdfs)
@@ -119,7 +90,6 @@ def run(overwrite_headers=False, overwrite_fragments=False, overwrite_hdfs=False
 
 def main():
     run(
-        overwrite_headers=True,
         overwrite_fragments=True,
         overwrite_hdfs=True
     )
