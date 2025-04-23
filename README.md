@@ -1,19 +1,21 @@
 As pastas contidas no .gitignore são muito grandes para o GitHub.
 
-O MH-100k deve ser baixado pelo link https://figshare.com/articles/dataset/MH-100K-Dataset/24328885 e extraído.
+O MH-100K deve ser baixado pelo link https://figshare.com/articles/dataset/MH-100K-Dataset/24328885 e as partes devem ser extraídas utilizando Winrar.
 
-As outras pastas serão geradas ao rodar o script parser.py, o que leva algum tempo para finalizar.
+O Mh-100M deve ser baixado seguindo o seguinte passo-a-passo:
+- Rode o comando: `git clone https://github.com/Malware-Hunter/MH-1M`
+- Vá até `data/compressed/zip-intents-permissions-opcodes-apicalls`
+- Rode o comando `copy /b amex-1M-[intents-permissions-opcodes-apicalls].npz.7z.part* full_archive.7z`
+- Extraia full_archive.7z usando 7zip, renomeie o .npz para dataset.npz
 
-O parser dividide os ~90k apks benignos em fragmentos menores, com cada um tendo aproximadamente o mesmo tamanho do fragmento com os ~10k malignos.
+As outras pastas serão geradas ao rodar os scripts `parser[1m, 100k].py`, o que leva algum tempo para finalizar.
 
-Além disso, o parser gera os fragmentos no formato .h5, que é mais eficiente de armazenar e carregar para os algoritmos, compostos por 10k benignos e 10k malignos, ou seja, já balanceados para o treinamento dos modelos.
+O parser dividide os apks benignos em fragmentos menores.
 
-Após rodar o `parser.py`, rode o `compression.py`.
-Este script irá gerar um csv com as variancias de todas as colunas (utilizado para treinar o modelo), e um .h5 do dataset MH-100K inteiro.
+Além disso, o parser gera os fragmentos no formato .h5, que é mais eficiente de armazenar e carregar para os algoritmos já balanceados para o treinamento dos modelos.
 
-Vá para o arquivo `mh_1m_headers.py` e siga as instruções lá presentes para baixar o dataset MH-1M, utilizado para verificar os resultados do modelo treinado utilizando o dataset MH-100K.
-
-Enfim, o arquivo `mh_1m_fragments.py` gera os fragmentos do mh_1m.
+O `compression.py`
+Este script irá gerar um .h5 do dataset MH-100K inteiro.
 
 # Rode o arquivo `main.py`
 O script `main` irá rodar todos os passos acima automaticamente, com exceção do download dos dois datasets.
