@@ -11,20 +11,21 @@ from utils import drop_metadata
 
 def GB(data):
 
+    print("starting xgb")
     X = data.drop(columns=['CLASS'])
     y = data['CLASS']
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
-    kf = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
+    #kf = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
 
-    params={
-        'base_score':[1],
-        'random_state': [42],
-        'n_estimators': [250],
-        'learning_rate' : [0.1],
-        'max_depth':[25],
-    }
+   #params={
+    #    'base_score':[1],
+    #    'random_state': [42],
+    #    'n_estimators': [250],
+    #    'learning_rate' : [0.1],
+    #    'max_depth':[25],
+    #}
 
     #rf = GridSearchCV(
     #    estimator =  xgb.XGBClassifier(),
@@ -36,9 +37,18 @@ def GB(data):
     
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.15, random_state=42)
     
-    gb = xgb.XGBClassifier(random_state=42, base_score=0.5, n_estimators=50, learning_rate=0.1, max_depth=10, scale_pos_weight=0.5, eval_metric='logloss')
+    gb = xgb.XGBClassifier(
+        random_state=42,
+        base_score=0.5,
+        n_estimators=250,
+        learning_rate=0.1,
+        max_depth=100,
+        eval_metric=['logloss', 'aucpr'],
+        early_stopping_rounds=10
+        
+    )
 
-    gb.fit(eval_set=[(X_train, y_train), (X_val, y_val)])
+    gb.fit(X_train, y_train, eval_set=[(X_val, y_val)])
 
     #best_model = gb.best_estimator_
 
@@ -83,7 +93,7 @@ def GB(data):
     print('confusion matrix total:')
     print(cm_total)
 
-    with open(f'results_mh1m_xgboost_{len(X)}rows_{len(X.columns)}cols.pkl', 'wb') as f:
+    with open(f'results_mh1m_xgboost_{len(X)}rows_{len(X.columns)}cols123.pkl', 'wb') as f:
         pickle.dump(results, f)
 
 
@@ -117,4 +127,4 @@ def main(col, size, filename):
     GB(data)
 
 if __name__ == "__main__":
-    main(col=4000, size=120_000, filename='./fragments1m/balanced_fragment_')
+    main(col=4000, size=10_000, filename='./fragments1m/balanced_fragment_')
