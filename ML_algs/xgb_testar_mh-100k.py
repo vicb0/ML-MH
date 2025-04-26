@@ -16,24 +16,6 @@ def GB(data):
     y = data['CLASS']
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
-
-    #kf = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
-
-   #params={
-    #    'base_score':[1],
-    #    'random_state': [42],
-    #    'n_estimators': [250],
-    #    'learning_rate' : [0.1],
-    #    'max_depth':[25],
-    #}
-
-    #rf = GridSearchCV(
-    #    estimator =  xgb.XGBClassifier(),
-    #    param_grid = params,
-    #    cv = kf,
-    #    verbose=2,
-    #    n_jobs=4,
-    #)
     
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.15, random_state=42)
     
@@ -50,14 +32,9 @@ def GB(data):
 
     gb.fit(X_train, y_train, eval_set=[(X_val, y_val)])
 
-    #best_model = gb.best_estimator_
-
     y_pred = gb.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     print(f"Accuracy best model: {accuracy}")
-    #results = pd.DataFrame.from_dict(rf.cv_results_)
-    #results.to_csv(f'random_forest_mh1m_results{cols}_1.csv', sep=';', index=False)
-    #print(results)
     print(classification_report(y_test, y_pred))
     print(confusion_matrix(y_test, y_pred))
 
@@ -72,7 +49,7 @@ def GB(data):
 
         mh100k = mh100k[data.columns.to_list()] #  mh100k.drop(columns=['SHA256', 'vt_detection'])
 
-        # mh100k = mh100k.reindex(columns=data.columns)
+        # mh100k = mh100k.reindex(columns=data.columns, fill_value=0)
 
         X_test = mh100k.drop(columns=['CLASS'])
         y_test = mh100k["CLASS"]
@@ -93,7 +70,7 @@ def GB(data):
     print('confusion matrix total:')
     print(cm_total)
 
-    with open(f'results_mh1m_xgboost_{len(X)}rows_{len(X.columns)}cols123.pkl', 'wb') as f:
+    with open(f'results_mh1m_xgboost_{len(X)}rows_{len(X.columns)}cols.pkl', 'wb') as f:
         pickle.dump(results, f)
 
 
